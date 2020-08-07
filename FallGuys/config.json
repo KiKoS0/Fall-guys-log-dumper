@@ -1,0 +1,6 @@
+{
+  "LogDirectory": "LocalLow\\Mediatonic\\FallGuys_client",
+  "LogFileName": "Player.log",
+  "WindowName": "FallGuys_client",
+  "DetectCountdownPattern" : "changing state from precountdown to countdown"
+}
