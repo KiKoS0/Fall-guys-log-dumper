@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using static FallGuys.WinImports;
@@ -12,7 +13,7 @@ namespace FallGuys
     {
         private static Config config;
         private static long currentBufferSize = 8096;
-        private static char[] buffer = new char[8096];
+        private static byte[] buffer = new byte[8096];
         private static readonly string appGuid = "{A942E48C-7BF3-4C84-B468-130685E90969}";
         static bool InitConfig()
         {
@@ -43,6 +44,7 @@ namespace FallGuys
                     Console.WriteLine("Could not configure application");
                     return;
                 }
+
                 var appdataDir = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
 
                 var logPath = Path.Combine(appdataDir, config.LogDirectory, config.LogFileName);
@@ -105,7 +107,7 @@ namespace FallGuys
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite);
-            using var streamReader = new StreamReader(fileStream);
+            using var streamReader = new BinaryReader(fileStream);
             if (index == -1)
             {
                 index = streamReader.BaseStream.Length;
@@ -127,16 +129,15 @@ namespace FallGuys
                 }
                 if (allocate)
                 {
-                    buffer = new char[currentBufferSize];
+                    buffer = new byte[currentBufferSize];
                 }
                 var count = (int)(newLen - index );
                 Console.WriteLine("FileSize: " + newLen + " Count: " + count + " OldSize: " + index);
                 streamReader.BaseStream.Seek(index, SeekOrigin.Begin);
-                streamReader.DiscardBufferedData();
                 streamReader.Read(buffer, 0, count);
                 index = newLen;
-                var newLines = new string(buffer);
-                Console.WriteLine(newLines);
+                var newLines = Encoding.UTF8.GetString(buffer, 0, count); ;
+                Console.Write(newLines);
                 var pattern = config.DetectCountdownPattern;
 
                 if (newLines.ToLower().Contains(pattern))
